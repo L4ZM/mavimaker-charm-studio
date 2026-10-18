@@ -1,0 +1,135 @@
+{
+  "source": "Original attached PNG",
+  "sampling": "Deterministic nearest-neighbor shared with browser converter",
+  "grid": [
+    203,
+    256
+  ],
+  "layers": [
+    {
+      "name": "Base continua",
+      "color": "#080706",
+      "cells": 33325,
+      "vertices": 67766,
+      "triangles": 135528,
+      "volumeMm3": 1627.1972656242608,
+      "min": [
+        -15.859375,
+        -20,
+        0
+      ],
+      "max": [
+        15.859375,
+        20,
+        2
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Negro",
+      "color": "#080706",
+      "cells": 8507,
+      "vertices": 21640,
+      "triangles": 43332,
+      "volumeMm3": 124.6142578125,
+      "min": [
+        -15.859375,
+        -20,
+        2
+      ],
+      "max": [
+        15.859375,
+        20,
+        2.6
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Café rojizo",
+      "color": "#a54120",
+      "cells": 8824,
+      "vertices": 19956,
+      "triangles": 39312,
+      "volumeMm3": 129.2578125,
+      "min": [
+        -15.078125,
+        -19.375,
+        2
+      ],
+      "max": [
+        14.921875,
+        19.21875,
+        2.6
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Piel",
+      "color": "#f7cf99",
+      "cells": 5955,
+      "vertices": 13552,
+      "triangles": 26664,
+      "volumeMm3": 87.2314453125,
+      "min": [
+        -15.234375,
+        -19.375,
+        2
+      ],
+      "max": [
+        15.234375,
+        15,
+        2.6
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Blanco",
+      "color": "#fafafa",
+      "cells": 9462,
+      "vertices": 20366,
+      "triangles": 40708,
+      "volumeMm3": 138.603515625,
+      "min": [
+        -12.265625,
+        -17.5,
+        2
+      ],
+      "max": [
+        12.265625,
+        0.3125,
+        2.6
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Rojo",
+      "color": "#ff3920",
+      "cells": 572,
+      "vertices": 1420,
+      "triangles": 2832,
+      "volumeMm3": 8.37890625,
+      "min": [
+        -6.953125,
+        -9.375,
+        2
+      ],
+      "max": [
+        5.234375,
+        -0.625,
+        2.6
+      ],
+      "badEdges": 0
+    }
+  ],
+  "checks": [
+    "closed consistently oriented edges",
+    "positive volumes",
+    "40mm high",
+    "2mm base",
+    "0.6mm relief",
+    "one assembly / six components",
+    "3MF ZIP readable"
+  ],
+  "browserQA": "Not run: execution approval rejected",
+  "slicerQA": "FlashForge Studio import not tested"
+}

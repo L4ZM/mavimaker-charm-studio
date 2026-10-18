@@ -1,29 +1,30 @@
-# MaviMaker Charm Studio — v0.1
+# MaviMaker Charm Studio 0.2
 
-Editor web de charms multicolor, orientado a FlashForge AD5X y boquilla de 0.4 mm.
+Conversor local PNG/SVG → 3MF. Abre el sitio, carga una imagen y pulsa **Procesar imagen** y **Exportar 3MF**. El ejemplo inicial es el PNG original de Jesús. Los archivos no se suben a un servidor.
 
-## Funciones
-- Importación de PNG con transparencia y SVG (rasterizado en el navegador).
-- Cuantización automática de colores y edición de colores y alturas.
-- Vista 2D y 3D interactiva.
-- Exportación de 3MF con objetos separados por color y STL individuales.
-- Guardado y recuperación de proyecto JSON.
-- Tamaño inicial de 40 mm.
+## Geometría y color
 
-## Uso
-Abre `index.html` en el navegador con acceso a internet para cargar Three.js y JSZip desde CDN. También funciona publicado en GitHub Pages.
+- Recorta márgenes transparentes; el alto ocupado es 40 mm por defecto.
+- Cinco colores semánticos: negro, café rojizo, piel, blanco y rojo. Esta opción usa una paleta fija para conservar la cruz roja y no dividir el sombreado del cabello; otros tamaños de paleta usan cuantización automática.
+- Muestreo determinista a 256 píxeles de alto (0.15625 mm por celda a 40 mm), filtro mayoritario y resolución de contactos diagonales. El contorno sigue siendo rasterizado, no una curva vectorial.
+- Base negra continua de 2 mm, rellenando huecos interiores de la silueta. Sobre ella se colocan cinco máscaras disjuntas, todas de 0.6 mm. Alto total: 2.6 mm.
+- Mallas con vértices compartidos, caras orientadas y paredes solamente en los límites. Un recurso de materiales y un solo ensamblaje 3MF con seis componentes (base + cinco colores).
+- Exportación STL y guardado/recuperación JSON. El color visual de cada pieza y su altura son editables.
 
-## Publicar en GitHub Pages
-1. Crea un repositorio público `mavimaker-charm-studio`.
-2. Sube `index.html` y `README.md` a la rama principal.
-3. En Settings → Pages selecciona Deploy from a branch, `main`, carpeta `/ (root)`.
-4. Espera la URL de GitHub Pages.
+## FlashForge AD5X
 
-## Limitaciones de v0.1
-- La geometría se crea desde píxeles cuantizados; los contornos pueden quedar escalonados.
-- El 3MF contiene cuerpos separados, pero la asignación de filamento se hace en el laminador.
-- Las capas de detalle son objetos independientes y pueden necesitar ajuste en el laminador para asegurar unión física con la base.
-- No crea aún una base continua bajo todo el diseño, perforaciones de argolla, limpieza morfológica ni un 3MF con perfiles específicos de FlashForge.
-- SVG se rasteriza y no se preservan sus curvas vectoriales.
-- Modelos complejos y resolución alta pueden consumir bastante memoria.
-- Validar siempre el resultado en FlashForge Studio antes de imprimir.
+Importa el 3MF como **un objeto con varias piezas**, conservando su posición relativa. Selecciona AD5X, boquilla 0.4 mm y asigna filamentos por pieza. Se exporta geometría 3MF Core con materiales; no incluye perfiles de impresora, G-code ni metadatos privados de FlashForge/Bambu.
+
+La AD5X tiene cuatro canales de filamento. El diseño de cinco colores requiere fusionar dos colores o planificar cambios manuales. Revisa detalles menores a 0.4 mm y la unión de las piezas en la previsualización de capas. Algunos laminadores pueden requerir reasignar los colores por pieza.
+
+## Resultados y verificación
+
+En `examples/`: 3MF de Jesús de 40 mm, vista de colores y reporte de geometría. Se verificaron todas las aristas con exactamente dos caras de orientación opuesta, volúmenes positivos, dimensiones y estructura ZIP/XML. La prueba visual de interfaz y la importación en FlashForge Studio **no se completaron** en esta sesión.
+
+El archivo `Advance Charm Maker.3mf` aportado se inspeccionó como referencia de un ensamblaje multicomponente. No se copió código, geometría ni perfiles propietarios de Nzzleworks.
+
+## Desarrollo
+
+Sitio estático, sin compilación. Sirve esta carpeta por HTTP para cargar el PNG del ejemplo. Three.js y JSZip se cargan desde CDN y requieren conexión.
+
+Instala las dependencias y ejecuta `npm test`. Para probar la interfaz con Chrome instalado: `npm run test:browser`. Opcionalmente `MAVIMAKER_TEST_MODULES` apunta a una carpeta de módulos existente y `MAVIMAKER_OUTPUT_DIR` cambia la carpeta de resultados. Las pruebas generan archivos en `test-results/` por defecto.
