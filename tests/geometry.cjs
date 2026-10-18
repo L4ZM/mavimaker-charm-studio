@@ -30,7 +30,7 @@ function check(mesh){
  sandbox.pngSource=png.data;sandbox.imageSize={width:png.width,height:png.height};
  sandbox.document.createElement=()=>({getContext:()=>({drawImage(){},getImageData(){return {data:png.data};}})});
  const actualCounts=vm.runInContext('draw=()=>{};state.source=imageSize;process();state.layers.map(l=>l.mask.filter(Boolean).length)',sandbox);
- assert.deepEqual(Array.from(actualCounts),result.map(l=>l.cells),'process action matches validated export masks');
+ assert.deepEqual(Array.from(actualCounts),Array.from(result,l=>l.cells),'process action matches validated export masks');
  const baseMask=vm.runInContext('state.layers[0].mask',sandbox),seen=new Set(),queue=[baseMask.indexOf(1)];seen.add(queue[0]);
  for(let k=0;k<queue.length;k++){const i=queue[k],x=i%w,y=Math.floor(i/w);for(const n of [x?i-1:-1,x<w-1?i+1:-1,y?i-w:-1,y<h-1?i+w:-1])if(n>=0&&baseMask[n]&&!seen.has(n)){seen.add(n);queue.push(n);}}
  assert.equal(seen.size,layers[0].cells,'base is one connected region');

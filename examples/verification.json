@@ -127,7 +127,9 @@
     "40mm high",
     "2mm base",
     "0.6mm relief",
-    "one assembly / six components",
+    "single connected base",
+    "process action with simulated canvas",
+    "one assembly / six components / five materials",
     "3MF ZIP readable"
   ],
   "browserQA": "Not run: execution approval rejected",
