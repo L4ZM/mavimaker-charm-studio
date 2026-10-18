@@ -90,8 +90,9 @@ async function make3mf(){
   const zip=new JSZip();
   zip.file('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>');
   zip.file('_rels/.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>');
-  const materials=state.layers.map(l=>`<base name="${escapeXml(l.name)}" displaycolor="${l.color.toUpperCase()}FF"/>`).join('');
-  const objects=state.layers.map((l,i)=>`<object id="${i+2}" name="${escapeXml(l.name)}" type="model" pid="1" pindex="${i}">${modelXml(triangles(l,i))}</object>`).join('');
+  const materialLayers=state.layers.filter((l,i,all)=>all.findIndex(v=>v.color.toLowerCase()===l.color.toLowerCase())===i);
+  const materials=materialLayers.map(l=>`<base name="${escapeXml(l.name)}" displaycolor="${l.color.toUpperCase()}FF"/>`).join('');
+  const objects=state.layers.map((l,i)=>`<object id="${i+2}" name="${escapeXml(l.name)}" type="model" pid="1" pindex="${materialLayers.findIndex(v=>v.color.toLowerCase()===l.color.toLowerCase())}">${modelXml(triangles(l,i))}</object>`).join('');
   const assembly=state.layers.length+2;
   zip.file('3D/3dmodel.model',`<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xml:lang="es" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Application">MaviMaker Charm Studio 0.2</metadata><resources><basematerials id="1">${materials}</basematerials>${objects}<object id="${assembly}" name="Charm" type="model"><components>${state.layers.map((_,i)=>`<component objectid="${i+2}"/>`).join('')}</components></object></resources><build><item objectid="${assembly}"/></build></model>`);
   return zip.generateAsync({type:'blob',compression:'DEFLATE'});

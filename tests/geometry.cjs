@@ -26,13 +26,21 @@ function check(mesh){
  sandbox.input={w,h,pixels};
  const result=vm.runInContext(`(()=>{const {w,h,pixels}=input,colors=JESUS_PALETTE.map(rgb),labels=new Int16Array(w*h).fill(-1);for(let i=0;i<labels.length;i++)if(pixels[4*i+3]>=128)labels[i]=nearest(pixels.slice(4*i,4*i+3),colors);cleanLabels(labels,w,h);state.w=w;state.h=h;state.layers=[{name:'Base continua',color:JESUS_PALETTE[0],height:2,mask:silhouette(labels,w,h)},...colors.map((c,j)=>({name:COLOR_NAMES[j],color:hex(...c),height:.6,mask:Array.from(labels,v=>v===j?1:0)}))];return state.layers.map((l,i)=>({name:l.name,color:l.color,cells:l.mask.filter(Boolean).length,mesh:indexedMesh(triangles(l,i))}));})()`,sandbox);
  const layers=result.map(l=>({name:l.name,color:l.color,cells:l.cells,...check(l.mesh)}));
+ // Exercise the actual process action using the decoded PNG as a canvas source.
+ sandbox.pngSource=png.data;sandbox.imageSize={width:png.width,height:png.height};
+ sandbox.document.createElement=()=>({getContext:()=>({drawImage(){},getImageData(){return {data:png.data};}})});
+ const actualCounts=vm.runInContext('draw=()=>{};state.source=imageSize;process();state.layers.map(l=>l.mask.filter(Boolean).length)',sandbox);
+ assert.deepEqual(Array.from(actualCounts),result.map(l=>l.cells),'process action matches validated export masks');
+ const baseMask=vm.runInContext('state.layers[0].mask',sandbox),seen=new Set(),queue=[baseMask.indexOf(1)];seen.add(queue[0]);
+ for(let k=0;k<queue.length;k++){const i=queue[k],x=i%w,y=Math.floor(i/w);for(const n of [x?i-1:-1,x<w-1?i+1:-1,y?i-w:-1,y<h-1?i+w:-1])if(n>=0&&baseMask[n]&&!seen.has(n)){seen.add(n);queue.push(n);}}
+ assert.equal(seen.size,layers[0].cells,'base is one connected region');
  assert.equal(layers.length,6);assert.equal(layers[0].min[2],0);assert.equal(layers[0].max[2],2);assert.equal(layers[0].max[1]-layers[0].min[1],40);
  layers.slice(1).forEach(l=>{assert.equal(l.min[2],2);assert.equal(l.max[2],2.6);});
  fs.mkdirSync(out,{recursive:true});const blob=await vm.runInContext('make3mf()',sandbox);const data=Buffer.from(await blob.arrayBuffer());fs.writeFileSync(path.join(out,'jesus-40mm.3mf'),data);
- const zip=await JSZip.loadAsync(data);const xml=await zip.file('3D/3dmodel.model').async('string');assert.equal((xml.match(/<component /g)||[]).length,6);assert.equal((xml.match(/<item /g)||[]).length,1);
+ const zip=await JSZip.loadAsync(data);const xml=await zip.file('3D/3dmodel.model').async('string');assert.equal((xml.match(/<component /g)||[]).length,6);assert.equal((xml.match(/<item /g)||[]).length,1);assert.equal((xml.match(/<base /g)||[]).length,5);
  fs.writeFileSync(path.join(out,'jesus-proyecto.json'),vm.runInContext('JSON.stringify({version:2,w:state.w,h:state.h,layers:state.layers,size:40,base:2})',sandbox));
  const preview=new PNG({width:w,height:h});const masks=vm.runInContext('state.layers',sandbox);for(let i=0;i<w*h;i++)for(const l of masks)if(l.mask[i]){preview.data.set([...l.color.slice(1).match(/../g).map(v=>parseInt(v,16)),255],i*4);}
  fs.writeFileSync(path.join(out,'jesus-colores.png'),PNG.sync.write(preview));
- const report={source:'Original attached PNG',sampling:'Deterministic nearest-neighbor shared with browser converter',grid:[w,h],layers,checks:['closed consistently oriented edges','positive volumes','40mm high','2mm base','0.6mm relief','one assembly / six components','3MF ZIP readable'],browserQA:'Not run: execution approval rejected',slicerQA:'FlashForge Studio import not tested'};
+ const report={source:'Original attached PNG',sampling:'Deterministic nearest-neighbor shared with browser converter',grid:[w,h],layers,checks:['closed consistently oriented edges','positive volumes','40mm high','2mm base','0.6mm relief','single connected base','process action with simulated canvas','one assembly / six components / five materials','3MF ZIP readable'],browserQA:'Not run: execution approval rejected',slicerQA:'FlashForge Studio import not tested'};
  fs.writeFileSync(path.join(out,'verification.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
 })().catch(e=>{console.error(e);process.exitCode=1;});

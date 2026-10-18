@@ -28,7 +28,7 @@ function check(mesh){
  for(const l of report.layers.slice(1)){assert.equal(l.min[2],2);assert.equal(l.max[2],2.6);}
  assert(Math.abs(report.layers[0].max[1]-report.layers[0].min[1]-40)<1e-7);
  const downloadPromise=page.waitForEvent('download');await page.click('#export3mf');const download=await downloadPromise;await download.saveAs(path.join(out,'jesus-40mm.3mf'));
- const zip=await JSZip.loadAsync(fs.readFileSync(path.join(out,'jesus-40mm.3mf')));const xml=await zip.file('3D/3dmodel.model').async('string');assert.equal((xml.match(/<item /g)||[]).length,1);assert.equal((xml.match(/<component /g)||[]).length,6);assert.equal((xml.match(/<base /g)||[]).length,6);
+ const zip=await JSZip.loadAsync(fs.readFileSync(path.join(out,'jesus-40mm.3mf')));const xml=await zip.file('3D/3dmodel.model').async('string');assert.equal((xml.match(/<item /g)||[]).length,1);assert.equal((xml.match(/<component /g)||[]).length,6);assert.equal((xml.match(/<base /g)||[]).length,5);
  await page.screenshot({path:path.join(out,'interfaz.png'),fullPage:true});
  // Changing dimensions must regenerate all meshes at the requested scale.
  await page.fill('#size','50');await page.locator('#size').dispatchEvent('change');
