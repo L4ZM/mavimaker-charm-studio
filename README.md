@@ -1,4 +1,4 @@
-# MaviMaker Charm Studio 0.2
+# MaviMaker Charm Studio 0.3
 
 Conversor local PNG/SVG → 3MF. Abre el sitio, carga una imagen y pulsa **Procesar imagen** y **Exportar 3MF**. El ejemplo inicial es el PNG original de Jesús. Los archivos no se suben a un servidor.
 
@@ -6,9 +6,10 @@ Conversor local PNG/SVG → 3MF. Abre el sitio, carga una imagen y pulsa **Proce
 
 - Recorta márgenes transparentes; el alto ocupado es 40 mm por defecto.
 - Cinco colores semánticos: negro, café rojizo, piel, blanco y rojo. Esta opción usa una paleta fija para conservar la cruz roja y no dividir el sombreado del cabello; otros tamaños de paleta usan cuantización automática.
-- Muestreo determinista a 256 píxeles de alto (0.15625 mm por celda a 40 mm), filtro mayoritario y resolución de contactos diagonales. El contorno sigue siendo rasterizado, no una curva vectorial.
+- Segmentación a 512 píxeles de alto, limpieza de pequeñas islas de antialias y contactos diagonales. Se trazan contornos vectoriales y se suavizan en un grafo compartido: dos colores vecinos conservan exactamente el mismo límite.
+- Los cruces entre contornos se comprueban y limitan el suavizado si un detalle es demasiado estrecho. El alto final se normaliza a 40 mm después de suavizar.
 - Base negra continua de 2 mm, rellenando huecos interiores de la silueta. Sobre ella se colocan cinco máscaras disjuntas, todas de 0.6 mm. Alto total: 2.6 mm.
-- Mallas con vértices compartidos, caras orientadas y paredes solamente en los límites. Un recurso de materiales y un solo ensamblaje 3MF con seis componentes (base + cinco colores).
+- Se triangulan polígonos con sus huecos y se extruyen sus paredes; ya no se extruye cada celda. Mallas con vértices compartidos y caras orientadas. Un recurso de materiales y un solo ensamblaje 3MF con seis componentes (base + cinco colores).
 - Exportación STL y guardado/recuperación JSON. El color visual de cada pieza y su altura son editables.
 
 ## FlashForge AD5X
@@ -22,6 +23,8 @@ La AD5X tiene cuatro canales de filamento. El diseño de cinco colores requiere 
 En `examples/`: 3MF de Jesús de 40 mm, vista de colores y reporte de geometría. Se verificaron todas las aristas con exactamente dos caras de orientación opuesta, volúmenes positivos, dimensiones y estructura ZIP/XML. La prueba visual de interfaz y la importación en FlashForge Studio **no se completaron** en esta sesión.
 
 El archivo `Advance Charm Maker.3mf` aportado se inspeccionó como referencia de un ensamblaje multicomponente. No se copió código, geometría ni perfiles propietarios de Nzzleworks.
+
+La triangulación utiliza Earcut 2.2.4 de Mapbox bajo licencia ISC, incluida en `vendor/earcut.LICENSE`. El trazado, suavizado y extrusión son implementación original de MaviMaker.
 
 ## Desarrollo
 
