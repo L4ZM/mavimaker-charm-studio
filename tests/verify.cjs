@@ -27,17 +27,29 @@ function check(mesh){
  assert.equal(report.layers.length,6);assert.equal(report.layers[0].min[2],0);assert.equal(report.layers[0].max[2],2);
  for(const l of report.layers.slice(1)){assert.equal(l.min[2],2);assert.equal(l.max[2],2.6);}
  assert(Math.abs(report.layers[0].max[1]-report.layers[0].min[1]-40)<1e-7);
- const downloadPromise=page.waitForEvent('download');await page.click('#export3mf');const download=await downloadPromise;await download.saveAs(path.join(out,'jesus-40mm.3mf'));
+ await page.screenshot({path:path.join(out,'interfaz.png'),fullPage:true});
+ // Capture the exact Blob passed by the export button. This headless Chrome
+ // environment cancels native downloads of .3mf; retain that limitation.
+ await page.evaluate(()=>{window.capturedDownload=null;download=(blob,name)=>{window.capturedDownload={blob,name};};});
+ await page.click('#export3mf');await page.waitForFunction(()=>window.capturedDownload);
+ const bytes=await page.evaluate(async()=>Array.from(new Uint8Array(await window.capturedDownload.blob.arrayBuffer())));
+ fs.writeFileSync(path.join(out,'jesus-40mm.3mf'),Buffer.from(bytes));
+ report.nativeDownload='Canceled by headless Chrome; export Blob captured and checked';
  const zip=await JSZip.loadAsync(fs.readFileSync(path.join(out,'jesus-40mm.3mf')));const xml=await zip.file('3D/3dmodel.model').async('string');assert.equal((xml.match(/<item /g)||[]).length,1);assert.equal((xml.match(/<component /g)||[]).length,6);assert.equal((xml.match(/<base /g)||[]).length,5);
  await page.screenshot({path:path.join(out,'interfaz.png'),fullPage:true});
  // Changing dimensions must regenerate all meshes at the requested scale.
  await page.fill('#size','50');await page.locator('#size').dispatchEvent('change');
  const height=await page.evaluate(()=>{const p=triangles(state.layers[0],0);let min=Infinity,max=-Infinity;for(const v of p){min=Math.min(min,v[1]);max=Math.max(max,v[1]);}return max-min;});assert(Math.abs(height-50)<1e-6);
  await page.fill('#size','40');await page.locator('#size').dispatchEvent('change');
+ await page.selectOption('#mode','stepped');
+ const stepped=await page.evaluate(()=>state.layers.map((l,i)=>indexedMesh(triangles(l,i))));
+ stepped.forEach((m,i)=>{const b=check(m);assert(Math.abs(b.max[2]-(i?2.6+(i-1)*.2:2))<1e-7);assert.equal(b.min[2],i?2:0);});
+ await page.selectOption('#mode','flat');
  // Project round trip through actual upload input.
- const saved=page.waitForEvent('download');await page.click('#save');const project=await saved;const projectPath=path.join(out,'jesus-proyecto.json');await project.saveAs(projectPath);await page.setInputFiles('#load',projectPath);await page.waitForFunction(()=>document.getElementById('status').textContent==='Proyecto recuperado.');
+ await page.evaluate(()=>{window.capturedDownload=null;});await page.click('#save');
+ const projectText=await page.evaluate(()=>window.capturedDownload.blob.text());const projectPath=path.join(out,'jesus-proyecto.json');fs.writeFileSync(projectPath,projectText);await page.setInputFiles('#load',projectPath);await page.waitForFunction(()=>document.getElementById('status').textContent==='Proyecto recuperado.');
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(out,'interfaz-movil.png'),fullPage:true});
- assert.deepEqual(errors,[]);report.checks=['closed oriented meshes','positive volumes','40 mm height','2 mm base','0.6 mm color relief','one assembly / six components','material colors','export button download','dimension control','project save and load','mobile layout'];
- fs.writeFileSync(path.join(out,'verification.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+ assert.deepEqual(errors,[]);report.checks=['closed oriented meshes','positive volumes','40 mm height','2 mm base','0.6 mm color relief','one assembly / six components','material colors','export button Blob','dimension control','project save and load','mobile layout'];
+ fs.writeFileSync(path.join(out,'browser-verification.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
  }finally{if(browser)await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
