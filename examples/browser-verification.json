@@ -1,0 +1,138 @@
+{
+  "image": "jesus-original.png",
+  "grid": [
+    407,
+    512
+  ],
+  "layers": [
+    {
+      "name": "Base continua",
+      "color": "#080706",
+      "cells": 133609,
+      "vertices": 4464,
+      "triangles": 8924,
+      "volumeMm3": 1630.4410343871116,
+      "min": [
+        -15.8938336,
+        -20,
+        0
+      ],
+      "max": [
+        15.8938336,
+        20,
+        2
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Negro",
+      "color": "#080706",
+      "cells": 34158,
+      "vertices": 16536,
+      "triangles": 33124,
+      "volumeMm3": 126.6136924503495,
+      "min": [
+        -15.8938336,
+        -20,
+        2
+      ],
+      "max": [
+        15.8938336,
+        20,
+        2.6
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Café rojizo",
+      "color": "#a54120",
+      "cells": 35330,
+      "vertices": 10012,
+      "triangles": 18048,
+      "volumeMm3": 127.35275782246732,
+      "min": [
+        -15.2291224,
+        -19.3750015,
+        2
+      ],
+      "max": [
+        15.225602,
+        19.1956096,
+        2.6
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Piel",
+      "color": "#f7cf99",
+      "cells": 23939,
+      "vertices": 6472,
+      "triangles": 11508,
+      "volumeMm3": 86.82992819740541,
+      "min": [
+        -15.1970736,
+        -19.3750015,
+        2
+      ],
+      "max": [
+        15.1935532,
+        14.9390245,
+        2.6
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Blanco",
+      "color": "#fafafa",
+      "cells": 37882,
+      "vertices": 4314,
+      "triangles": 8600,
+      "volumeMm3": 139.7845728165718,
+      "min": [
+        -12.2283234,
+        -17.5000014,
+        2
+      ],
+      "max": [
+        12.302928,
+        7.5000001,
+        2.6
+      ],
+      "badEdges": 0
+    },
+    {
+      "name": "Rojo",
+      "color": "#ff3920",
+      "cells": 2272,
+      "vertices": 960,
+      "triangles": 1912,
+      "volumeMm3": 8.482703511452174,
+      "min": [
+        -6.9939481,
+        -9.3750009,
+        2
+      ],
+      "max": [
+        5.2716776,
+        -0.7031254,
+        2.6
+      ],
+      "badEdges": 0
+    }
+  ],
+  "errors": [],
+  "nativeDownload": "Canceled by headless Chrome; export Blob captured and checked",
+  "checks": [
+    "closed oriented meshes",
+    "positive volumes",
+    "40 mm height",
+    "2 mm base",
+    "0.6 mm color relief",
+    "one assembly / six components",
+    "material colors",
+    "export button Blob",
+    "dimension control",
+    "project save and load",
+    "mobile layout"
+  ]
+}

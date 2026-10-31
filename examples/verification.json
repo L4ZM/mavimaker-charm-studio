@@ -8,24 +8,24 @@
   "smoothing": {
     "scale": 1,
     "outerVertices": 2234,
-    "rmsTurnDegrees": 4.614798054883709,
-    "maxTurnDegrees": 85.73728527761811
+    "rmsTurnDegrees": 5.332888503573281,
+    "maxTurnDegrees": 90.55657406960468
   },
   "layers": [
     {
       "name": "Base continua",
       "color": "#080706",
       "cells": 133609,
-      "vertices": 4458,
-      "triangles": 8912,
-      "volumeMm3": 1630.5021011007711,
+      "vertices": 4464,
+      "triangles": 8924,
+      "volumeMm3": 1630.4410343871116,
       "min": [
-        -15.893833568075832,
+        -15.8938336,
         -20,
         0
       ],
       "max": [
-        15.893833568075832,
+        15.8938336,
         20,
         2
       ],
@@ -34,17 +34,17 @@
     {
       "name": "Negro",
       "color": "#080706",
-      "cells": 34715,
-      "vertices": 18538,
-      "triangles": 37128,
-      "volumeMm3": 127.61024836440646,
+      "cells": 34158,
+      "vertices": 16536,
+      "triangles": 33124,
+      "volumeMm3": 126.6136924503495,
       "min": [
-        -15.893833568075832,
+        -15.8938336,
         -20,
         2
       ],
       "max": [
-        15.893833568075832,
+        15.8938336,
         20,
         2.6
       ],
@@ -53,18 +53,18 @@
     {
       "name": "Café rojizo",
       "color": "#a54120",
-      "cells": 34648,
-      "vertices": 5442,
-      "triangles": 10880,
-      "volumeMm3": 126.86380418235042,
+      "cells": 35330,
+      "vertices": 10012,
+      "triangles": 18048,
+      "volumeMm3": 127.35275782246732,
       "min": [
-        -12.610335140450605,
-        -0.623432941349183,
+        -15.2291224,
+        -19.3750015,
         2
       ],
       "max": [
-        12.30135919939097,
-        19.195609574290376,
+        15.225602,
+        19.1956096,
         2.6
       ],
       "badEdges": 0
@@ -72,18 +72,18 @@
     {
       "name": "Piel",
       "color": "#f7cf99",
-      "cells": 23618,
-      "vertices": 3984,
-      "triangles": 7940,
-      "volumeMm3": 86.1968064240115,
+      "cells": 23939,
+      "vertices": 6472,
+      "triangles": 11508,
+      "volumeMm3": 86.82992819740541,
       "min": [
-        -15.190239321364022,
-        -19.374959669988705,
+        -15.1970736,
+        -19.3750015,
         2
       ],
       "max": [
-        15.189065760827154,
-        14.932467322001607,
+        15.1935532,
+        14.9390245,
         2.6
       ],
       "badEdges": 0
@@ -91,18 +91,18 @@
     {
       "name": "Blanco",
       "color": "#fafafa",
-      "cells": 38267,
-      "vertices": 5612,
-      "triangles": 11204,
-      "volumeMm3": 139.95695818478305,
+      "cells": 37882,
+      "vertices": 4314,
+      "triangles": 8600,
+      "volumeMm3": 139.7845728165718,
       "min": [
-        -12.21245425807556,
-        -17.500001359098942,
+        -12.2283234,
+        -17.5000014,
         2
       ],
       "max": [
-        12.251949054919903,
-        0.3543478480274222,
+        12.302928,
+        7.5000001,
         2.6
       ],
       "badEdges": 0
@@ -110,18 +110,18 @@
     {
       "name": "Rojo",
       "color": "#ff3920",
-      "cells": 2333,
-      "vertices": 1062,
-      "triangles": 2116,
-      "volumeMm3": 8.45879862819789,
+      "cells": 2272,
+      "vertices": 960,
+      "triangles": 1912,
+      "volumeMm3": 8.482703511452174,
       "min": [
-        -6.9939481188640675,
-        -9.375000880578508,
+        -6.9939481,
+        -9.3750009,
         2
       ],
       "max": [
-        5.2505329765827815,
-        -0.7233698790512115,
+        5.2716776,
+        -0.7031254,
         2.6
       ],
       "badEdges": 0
@@ -137,14 +137,18 @@
     "process action with simulated canvas",
     "shared contour graph with crossing checks",
     "one assembly / six components / five materials",
-    "3MF ZIP readable"
+    "3MF ZIP readable",
+    "serialized meshes closed and nondegenerate",
+    "stepped mode heights and 3MF",
+    "single-pixel eye retained"
   ],
-  "browserQA": "Not run: execution approval rejected",
+  "browserQA": "See browser-verification.json",
   "slicerQA": "FlashForge Studio import not tested",
   "regressionCases": [
     "donut",
     "two-holes",
     "thin-stroke",
+    "tiny-eye",
     "diagonal"
   ]
 }

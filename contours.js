@@ -47,7 +47,7 @@ function contourPlan(layers,w,h){
     for(const [id,neighbors] of adj)if(neighbors.size===2){
       const [a,b]=[...neighbors].map(n=>points.get(n)),p=points.get(id),o=original.get(id);
       let q=[.5*p[0]+.25*(a[0]+b[0]),.5*p[1]+.25*(a[1]+b[1])];
-      const dx=q[0]-o[0],dy=q[1]-o[1],d=Math.hypot(dx,dy),limit=1.25;
+      const dx=q[0]-o[0],dy=q[1]-o[1],d=Math.hypot(dx,dy),limit=Math.min(1.25,.08*h/(+$('size').value||40));
       if(d>limit)q=[o[0]+dx*limit/d,o[1]+dy*limit/d];next.set(id,q);
     }
     points=next;
@@ -78,7 +78,7 @@ function contourPlan(layers,w,h){
 }
 let contourCache=null;
 function getContourPlan(){
-  if(!contourCache||contourCache.layers!==state.layers||contourCache.w!==state.w||contourCache.h!==state.h){contourCache={layers:state.layers,w:state.w,h:state.h,plan:contourPlan(state.layers,state.w,state.h)};}
+  if(!contourCache||contourCache.layers!==state.layers||contourCache.w!==state.w||contourCache.h!==state.h||contourCache.size!==+$('size').value){contourCache={layers:state.layers,w:state.w,h:state.h,size:+$('size').value,plan:contourPlan(state.layers,state.w,state.h)};}
   return contourCache.plan;
 }
 drawPreviewOnly=function(){
@@ -94,7 +94,7 @@ triangles=function(layer,index){
   const size=+$('size').value;
   if(!Number.isFinite(size)||size<=0||!Number.isFinite(layer.height)||layer.height<=0)throw Error('Medidas inválidas');
   const plan=getContourPlan(),scale=size/(plan.maxY-plan.minY),cx=(plan.minX+plan.maxX)/2,cy=(plan.minY+plan.maxY)/2;
-  const polygons=plan.loops[index].map(loop=>pruneStraight(loop.map(id=>{const p=plan.points.get(id);return[(p[0]-cx)*scale,(p[1]-cy)*scale];})));
+  const polygons=plan.loops[index].map(loop=>pruneStraight(loop.map(id=>{const p=plan.points.get(id);return[+((p[0]-cx)*scale).toFixed(7),+((p[1]-cy)*scale).toFixed(7)];})));
   const outers=polygons.filter(p=>polygonArea(p)>0).map(p=>({points:p,holes:[]}));
   for(const hole of polygons.filter(p=>polygonArea(p)<0)){
     const parents=outers.filter(p=>insidePolygon(hole[0],p.points)).sort((a,b)=>polygonArea(a.points)-polygonArea(b.points));
@@ -105,7 +105,20 @@ triangles=function(layer,index){
   for(const outer of outers){
     const rings=[outer.points,...outer.holes],flat=[],holes=[];let count=0;
     rings.forEach((r,i)=>{if(i)holes.push(count);for(const p of r){flat.push(...p);count++;}});
-    const indices=CharmEarcut(flat,holes,2),all=rings.flat();
+    const all=rings.flat(),raw=CharmEarcut(flat,holes,2),caps=[],repair=new Set();
+    const cross=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+    for(let k=0;k<raw.length;k+=3){const f=raw.slice(k,k+3);if(Math.abs(cross(...f.map(i=>all[i])))<1e-10)f.forEach(i=>repair.add(i));else caps.push(f);}
+    // Earcut can emit a zero-area ear on a straight diagonal. Remove that ear
+    // and split the neighboring cap at its boundary vertex to keep walls sewn.
+    for(const id of repair){const p=all[id];for(let k=0;k<caps.length;k++){
+      const f=caps[k];if(f.includes(id))continue;
+      for(let j=0;j<3;j++){const a=all[f[j]],b=all[f[(j+1)%3]];
+        if(Math.abs(cross(a,b,p))<1e-10&&(p[0]-a[0])*(p[0]-b[0])+(p[1]-a[1])*(p[1]-b[1])<-1e-12){
+          const c=f[(j+2)%3];caps[k]=[f[j],id,c];caps.push([id,f[(j+1)%3],c]);break;
+        }
+      }
+    }}
+    const indices=caps.flat();
     for(let i=0;i<indices.length;i+=3){let [a,b,c]=indices.slice(i,i+3).map(j=>all[j]);
       if((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])<0)[b,c]=[c,b];
       tri([...a,z1],[...b,z1],[...c,z1]);tri([...c,z0],[...b,z0],[...a,z0]);

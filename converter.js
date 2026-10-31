@@ -3,30 +3,6 @@
 const JESUS_PALETTE=['#080706','#a54120','#f7cf99','#fafafa','#ff3920'];
 const COLOR_NAMES=['Negro','Café rojizo','Piel','Blanco','Rojo'];
 function cleanLabels(labels,w,h){
-  // Conservative majority filter removes isolated antialias speckles.
-  const original=labels.slice();
-  for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
-    const i=y*w+x;if(original[i]<0)continue;
-    const counts=new Map();
-    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-      const v=original[i+dy*w+dx];if(v>=0)counts.set(v,(counts.get(v)||0)+1);
-    }
-    for(const [v,n] of counts)if(n>=7)labels[i]=v;
-  }
-  // Merge tiny antialias islands into the most common surrounding material.
-  // The physical threshold is 0.24 mm at the default 40 mm design height.
-  const seen=new Uint8Array(w*h),minimum=Math.max(2,Math.floor((.24*h/40)**2));
-  for(let seed=0;seed<labels.length;seed++)if(labels[seed]>=0&&!seen[seed]){
-    const color=labels[seed],queue=[seed],border=new Map();seen[seed]=1;
-    for(let k=0;k<queue.length;k++){
-      const i=queue[k],x=i%w,y=Math.floor(i/w);
-      for(const n of [x?i-1:-1,x<w-1?i+1:-1,y?i-w:-1,y<h-1?i+w:-1])if(n>=0){
-        if(labels[n]===color){if(!seen[n]){seen[n]=1;queue.push(n);}}
-        else if(labels[n]>=0)border.set(labels[n],(border.get(labels[n])||0)+1);
-      }
-    }
-    if(queue.length<minimum&&border.size){const replacement=[...border].sort((a,b)=>b[1]-a[1])[0][0];for(const i of queue)labels[i]=replacement;}
-  }
   // Resolve diagonal-only contacts consistently across all colors. Such contacts
   // otherwise create an edge shared by four faces after extrusion.
   for(let pass=0;pass<12;pass++){
@@ -63,13 +39,14 @@ process=function(){
   const data=sampleRaster(source,c.width,x0,y0,x1,y1,w,h),k=+$('maxcolors').value;
   // Fixed semantic seeds deliberately preserve the small red cross and avoid
   // spending multiple palette entries on the shaded hair or skin.
-  const colors=k===5?JESUS_PALETTE.map(rgb):palette(data,k);
+  const useJesus=k===5&&/assets\/jesus-original\.png$/.test(img.src||'');
+  const colors=useJesus?JESUS_PALETTE.map(rgb):palette(data,k);
   const labels=new Int16Array(w*h).fill(-1);
   for(let i=0;i<labels.length;i++)if(data[i*4+3]>=128)labels[i]=nearest(Array.from(data.slice(i*4,i*4+3)),colors);
   cleanLabels(labels,w,h);
   state.w=w;state.h=h;
   state.layers=[{name:'Base continua',color:JESUS_PALETTE[0],mask:silhouette(labels,w,h),height:+$('base').value}];
-  colors.forEach((color,j)=>{const mask=Array.from(labels,v=>v===j?1:0);if(mask.some(Boolean))state.layers.push({name:k===5?COLOR_NAMES[j]:'Color '+(j+1),color:hex(...color),mask,height:+$('relief').value});});
+  colors.forEach((color,j)=>{const mask=Array.from(labels,v=>v===j?1:0);if(mask.some(Boolean))state.layers.push({name:useJesus?COLOR_NAMES[j]:'Color '+(j+1),color:hex(...color),mask,height:Math.round((+$('relief').value+($('mode').value==='stepped'?j*.2:0))*100)/100});});
   draw();
   status(`${w} × ${h}; ${state.layers.length-1} colores; alto ${$('size').value} mm; base ${$('base').value} mm + relieve ${$('relief').value} mm. Contornos vectoriales suavizados con límites compartidos. Revisa detalles inferiores a 0.4 mm y asigna filamentos en el laminador.`);
 };
@@ -110,9 +87,9 @@ async function make3mf(){
   const materials=materialLayers.map(l=>`<base name="${escapeXml(l.name)}" displaycolor="${l.color.toUpperCase()}FF"/>`).join('');
   const objects=state.layers.map((l,i)=>`<object id="${i+2}" name="${escapeXml(l.name)}" type="model" pid="1" pindex="${materialLayers.findIndex(v=>v.color.toLowerCase()===l.color.toLowerCase())}">${modelXml(triangles(l,i))}</object>`).join('');
   const assembly=state.layers.length+2;
-  zip.file('3D/3dmodel.model',`<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xml:lang="es" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Application">MaviMaker Charm Studio 0.3</metadata><resources><basematerials id="1">${materials}</basematerials>${objects}<object id="${assembly}" name="Charm" type="model"><components>${state.layers.map((_,i)=>`<component objectid="${i+2}"/>`).join('')}</components></object></resources><build><item objectid="${assembly}"/></build></model>`);
+  zip.file('3D/3dmodel.model',`<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xml:lang="es" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Application">MaviMaker Charm Studio 0.5</metadata><resources><basematerials id="1">${materials}</basematerials>${objects}<object id="${assembly}" name="Charm" type="model"><components>${state.layers.map((_,i)=>`<component objectid="${i+2}"/>`).join('')}</components></object></resources><build><item objectid="${assembly}"/></build></model>`);
   return zip.generateAsync({type:'blob',compression:'DEFLATE'});
 }
-export3mf=async function(){if(!state.layers.length)return status('No hay geometría.');try{status('Generando 3MF…');await new Promise(r=>setTimeout(r,20));download(await make3mf(),'mavimaker-jesus-suave-v03.3mf');status('3MF generado: contornos suaves, base y piezas por color. Importa como un solo objeto con varias piezas para conservar alturas.');}catch(e){status('Error al exportar: '+e.message);}};
+export3mf=async function(){if(!state.layers.length)return status('No hay geometría.');try{status('Generando 3MF…');await new Promise(r=>setTimeout(r,20));download(await make3mf(),'mavimaker-charm-v05.3mf');status('3MF generado: contornos suaves, base y piezas por color. Importa como un solo objeto con varias piezas para conservar alturas.');}catch(e){status('Error al exportar: '+e.message);}};
 demo=function(){const img=new Image();img.onload=()=>setSource(img);img.onerror=()=>status('No se pudo cargar el PNG original.');img.src='assets/jesus-original.png';};
 $('demo').onclick=demo;$('process').onclick=process;$('export3mf').onclick=export3mf;
